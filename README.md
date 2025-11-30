@@ -2,7 +2,7 @@
 
 Complete IoT system for maze-based challenge tracking with ESP32, mobile app, and web dashboard.
 
-![Dashboard](./screenshot_1.jpg)
+![Dashboard](./Screenshot_1.jpg)
 
 ## Quick Start
 
