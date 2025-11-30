@@ -1,0 +1,390 @@
+openapi: 3.0.3
+info:
+  title: Maze Solution API
+  description: |
+    Backend API for the Interactive Maze Challenge - A physical rehabilitation game using Hall sensors
+    to motivate adults to stay active. This API manages device status, configuration, and game sessions.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@mazechallenge.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.mazechallenge.com
+    description: Production server
+
+tags:
+  - name: Device Status
+    description: Manage maze device status and game sessions
+  - name: Device Config
+    description: Manage device configuration and settings
+  - name: Data
+    description: Generic data operations (legacy endpoint)
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Basic Authentication with username and password
+
+  schemas:
+    MazeDeviceStatus:
+      type: object
+      required:
+        - device_id
+        - alarm_active
+        - maze_completed
+        - hall_sensor_value
+        - battery_level
+        - timestamp
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        device_id:
+          type: string
+          maxLength: 50
+          description: Unique identifier for the Arduino device
+          example: "ARD001"
+        alarm_active:
+          type: boolean
+          description: Indicates if the alarm is currently active
+          example: true
+        maze_completed:
+          type: boolean
+          description: Indicates if the maze has been completed
+          example: false
+        hall_sensor_value:
+          type: boolean
+          description: Metal ball detection status (true when detected at finish)
+          example: false
+        battery_level:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Battery level percentage
+          example: 85
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp in RFC3339 format
+          example: "2024-01-15T10:30:00Z"
+
+    DeviceConfig:
+      type: object
+      required:
+        - device_id
+        - alarm_timeout
+        - sensitivity_level
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1
+        device_id:
+          type: string
+          maxLength: 50
+          description: Unique identifier for the Arduino device
+          example: "ARD001"
+        alarm_timeout:
+          type: integer
+          minimum: 1
+          maximum: 3600
+          description: Alarm timeout in seconds (1-3600)
+          example: 300
+        sensitivity_level:
+          type: integer
+          minimum: 1
+          maximum: 10
+          description: Hall sensor sensitivity level (1-10)
+          example: 5
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp in RFC3339 format
+          example: "2024-01-15T10:30:00Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid request body"
+        details:
+          type: array
+          items:
+            type: string
+          example: ["device_id is required", "battery_level must be between 0 and 100"]
+
+security:
+  - basicAuth: []
+
+paths:
+  /device/status:
+    post:
+      tags:
+        - Device Status
+      summary: Create device status
+      description: Create a new device status entry. The Arduino device sends this when starting or updating a game session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MazeDeviceStatus'
+            example:
+              device_id: "ARD001"
+              alarm_active: true
+              maze_completed: false
+              hall_sensor_value: false
+              battery_level: 85
+              timestamp: "2024-01-15T10:30:00Z"
+      responses:
+        '201':
+          description: Status created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MazeDeviceStatus'
+        '400':
+          description: Invalid request body or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid credentials
+
+    get:
+      tags:
+        - Device Status
+      summary: List device statuses
+      description: Retrieve all device status entries with optional filtering
+      parameters:
+        - name: device_id
+          in: query
+          description: Filter by device ID
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          description: Number of records to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of device statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MazeDeviceStatus'
+        '401':
+          description: Unauthorized
+
+    put:
+      tags:
+        - Device Status
+      summary: Update device status
+      description: Update an existing device status entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MazeDeviceStatus'
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MazeDeviceStatus'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Unauthorized
+        '404':
+          description: Status not found
+
+  /device/status/{id}:
+    get:
+      tags:
+        - Device Status
+      summary: Get device status by ID
+      description: Retrieve a specific device status entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device status details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MazeDeviceStatus'
+        '400':
+          description: Invalid ID
+        '401':
+          description: Unauthorized
+        '404':
+          description: Status not found
+
+    delete:
+      tags:
+        - Device Status
+      summary: Delete device status
+      description: Delete a specific device status entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status deleted successfully
+        '400':
+          description: Invalid ID
+        '401':
+          description: Unauthorized
+        '404':
+          description: Status not found
+
+  /device/config:
+    post:
+      tags:
+        - Device Config
+      summary: Create device configuration
+      description: Create a new device configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceConfig'
+            example:
+              device_id: "ARD001"
+              alarm_timeout: 300
+              sensitivity_level: 5
+              updated_at: "2024-01-15T10:30:00Z"
+      responses:
+        '201':
+          description: Configuration created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceConfig'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Unauthorized
+
+    get:
+      tags:
+        - Device Config
+      summary: List device configurations
+      description: Retrieve all device configurations
+      parameters:
+        - name: device_id
+          in: query
+          description: Filter by device ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of device configurations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceConfig'
+        '401':
+          description: Unauthorized
+
+    put:
+      tags:
+        - Device Config
+      summary: Update device configuration
+      description: Update an existing device configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceConfig'
+      responses:
+        '200':
+          description: Configuration updated successfully
+        '400':
+          description: Invalid request body
+        '401':
+          description: Unauthorized
+        '404':
+          description: Configuration not found
+
+  /device/config/{id}:
+    get:
+      tags:
+        - Device Config
+      summary: Get configuration by ID
+      description: Retrieve a specific device configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device configuration details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceConfig'
+        '400':
+          description: Invalid ID
+        '401':
+          description: Unauthorized
+        '404':
+          description: Configuration not found
+
+    delete:
+      tags:
+        - Device Config
+      summary: Delete configuration
+      description: Delete a specific device configuration
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Configuration deleted successfully
+        '400':
+          description: Invalid ID
+        '401':
+          description: Unauthorized
+        '404':
+          description: Configuration not found

@@ -1,0 +1,55 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gofmt
+    - goimports
+    - misspell
+    - gocritic
+    - gosec
+    - unconvert
+    - dupl
+    - prealloc
+    - exportloopref
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  govet:
+    check-shadowing: true
+
+  gofmt:
+    simplify: true
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+
+  dupl:
+    threshold: 100
+
+  gosec:
+    excludes:
+      - G104 # Audit errors not checked (we handle this with errcheck)
+
+issues:
+  exclude-use-default: false
+  max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - gosec

@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Build multi-platform binaries
+      run: |
+        # Linux AMD64
+        GOOS=linux GOARCH=amd64 go build -ldflags="-w -s -X main.version=${{ steps.get_version.outputs.VERSION }}" -o api-linux-amd64 ./cmd/api/main.go
+
+        # Linux ARM64
+        GOOS=linux GOARCH=arm64 go build -ldflags="-w -s -X main.version=${{ steps.get_version.outputs.VERSION }}" -o api-linux-arm64 ./cmd/api/main.go
+
+        # Windows AMD64
+        GOOS=windows GOARCH=amd64 go build -ldflags="-w -s -X main.version=${{ steps.get_version.outputs.VERSION }}" -o api-windows-amd64.exe ./cmd/api/main.go
+
+        # macOS AMD64
+        GOOS=darwin GOARCH=amd64 go build -ldflags="-w -s -X main.version=${{ steps.get_version.outputs.VERSION }}" -o api-darwin-amd64 ./cmd/api/main.go
+
+        # macOS ARM64
+        GOOS=darwin GOARCH=arm64 go build -ldflags="-w -s -X main.version=${{ steps.get_version.outputs.VERSION }}" -o api-darwin-arm64 ./cmd/api/main.go
+
+    - name: Create checksums
+      run: |
+        sha256sum api-* > checksums.txt
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          api-linux-amd64
+          api-linux-arm64
+          api-windows-amd64.exe
+          api-darwin-amd64
+          api-darwin-arm64
+          checksums.txt
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

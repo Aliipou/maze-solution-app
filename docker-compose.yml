@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maze-solution-api
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - DB_PATH=/data/production.db
+      - LOG_FILE=/logs/production.log
+      - BASIC_AUTH_USERNAME=admin
+      - BASIC_AUTH_PASSWORD=password
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/data"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - maze-network
+
+networks:
+  maze-network:
+    driver: bridge
+
+volumes:
+  data:
+  logs:
