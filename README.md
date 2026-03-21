@@ -1,166 +1,47 @@
-# Maze Challenge IoT System
+<div align="center">
 
-Complete IoT system for maze-based challenge tracking with ESP32, mobile app, and web dashboard.
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&amp;logo=python)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
-![Dashboard](./Screenshot_1.jpg)
+# Maze Solver
+
+**Interactive maze solver with BFS, DFS, and A* visualization.**
+
+</div>
+
+## Overview
+
+Generate random mazes, then watch three classic pathfinding algorithms find their way through. Each algorithm is visualized step-by-step so you can see exactly how they differ in behavior and efficiency.
+
+## Algorithms
+
+**BFS (Breadth-First Search)**
+Explores all neighbors at the current depth before going deeper. Always finds the shortest path. Can be slow on large mazes because it explores in all directions equally.
+
+**DFS (Depth-First Search)**
+Dives as deep as possible before backtracking. Uses much less memory than BFS. Does not guarantee the shortest path.
+
+**A* (A-Star)**
+Guided by a heuristic (Manhattan distance to goal). Finds the shortest path much faster than BFS on average. The right choice for most practical pathfinding problems.
 
 ## Quick Start
 
-### Backend API
 ```bash
-go run ./cmd/api/main.go
-# Server: http://localhost:8080
+git clone https://github.com/Aliipou/maze-solution-app.git
+cd maze-solution-app
+pip install -r requirements.txt
+python main.py
 ```
 
-### Web Dashboard
-```bash
-cd web_new
-npm run dev
-# Dashboard: http://localhost:5173
-```
+Use arrow keys to select algorithm, Enter to run, G to generate a new maze.
 
-### Mobile App
-```bash
-cd mobile
-npm install
-npx react-native run-android
-```
+## Complexity Comparison
 
-### ESP32 Firmware
-```bash
-cd firmware
-pio run --target upload
-```
-
-## API Routes
-
-### Device Status
-- `GET /device/status` - List all device statuses
-- `GET /device/status/{id}` - Get specific status
-- `GET /device/status?device_id=ESP32_001` - Filter by device
-- `POST /device/status` - Create new status
-- `PUT /device/status` - Update status
-- `DELETE /device/status/{id}` - Delete status
-
-### Device Configuration
-- `GET /device/config` - List all configs
-- `GET /device/config/{id}` - Get specific config
-- `GET /device/config?device_id=ESP32_001` - Filter by device
-- `POST /device/config` - Create config
-- `PUT /device/config` - Update config
-- `DELETE /device/config/{id}` - Delete config
-
-### General Data
-- `GET /data` - List data
-- `GET /data/{id}` - Get specific data
-- `POST /data` - Create data
-- `PUT /data` - Update data
-- `DELETE /data/{id}` - Delete data
-
-## Authentication
-
-All API endpoints require Basic Authentication:
-- Username: `admin`
-- Password: `password`
-
-Example:
-```bash
-curl http://localhost:8080/device/status -u admin:password
-```
-
-## Project Structure
-
-```
-.
-├── cmd/api/              # Backend API entry point
-├── internal/             # Backend core logic
-│   ├── api/handlers/    # HTTP handlers
-│   ├── api/middleware/  # Auth & CORS
-│   └── api/service/     # Business logic
-├── firmware/             # ESP32 C++ code
-├── mobile/               # React Native app
-├── web_new/              # React dashboard (Vite)
-├── demo.html             # Standalone dashboard
-└── production.db         # SQLite database
-```
-
-## Technology Stack
-
-- **Backend**: Go 1.25, SQLite
-- **Frontend**: React 18, TypeScript, Material-UI, Vite
-- **Mobile**: React Native 0.73
-- **Firmware**: C++, ESP32, PlatformIO
-- **Testing**: Go testing framework (100+ tests)
-
-## Features
-
-### Backend
-- RESTful API with 12 endpoints
-- SQLite database
-- Basic authentication
-- CORS support
-- Input validation
-- 80-87% test coverage
-
-### Web Dashboard
-- Real-time device monitoring
-- Live statistics
-- Interactive controls
-- Auto-refresh (5s)
-- Material-UI design
-
-### Mobile App
-- BLE connectivity
-- Real-time timer
-- Statistics & charts
-- Push notifications
-
-### ESP32 Firmware
-- WiFi & BLE
-- Hall effect sensors
-- OLED display
-- Alarm system
-- Battery monitoring
-
-## Testing
-
-```bash
-# Run all tests
-go test ./...
-
-# Run with coverage
-go test -coverprofile=coverage.out ./...
-
-# View coverage
-go tool cover -html=coverage.out
-```
-
-## Development
-
-### Backend
-```bash
-go run ./cmd/api/main.go
-```
-
-### Web
-```bash
-cd web_new
-npm install
-npm run dev
-```
-
-### Mobile
-```bash
-cd mobile
-npm install
-npm start
-```
-
-### Firmware
-```bash
-cd firmware
-pio run
-```
+| Algorithm | Time | Space | Shortest Path? |
+|-----------|------|-------|----------------|
+| BFS | O(V+E) | O(V) | Yes |
+| DFS | O(V+E) | O(V) | No |
+| A* | O(E log V) | O(V) | Yes (with admissible heuristic) |
 
 ## License
 
