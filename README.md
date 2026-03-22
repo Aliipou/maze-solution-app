@@ -1,47 +1,120 @@
-<div align="center">
+# Maze Solution App
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&amp;logo=python)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
+**IoT maze game platform** — ESP32 hardware with Hall-effect sensors and OLED display, Go REST API backend, React dashboard, and React Native mobile companion.
 
-# Maze Solver
+Players navigate a physical maze while the platform tracks movement via Hall-effect sensors, displays real-time feedback on an OLED screen, and streams data over BLE to the backend. The dashboard visualizes game sessions, device status, and player statistics.
 
-**Interactive maze solver with BFS, DFS, and A* visualization.**
+## Architecture
 
-</div>
-
-## Overview
-
-Generate random mazes, then watch three classic pathfinding algorithms find their way through. Each algorithm is visualized step-by-step so you can see exactly how they differ in behavior and efficiency.
-
-## Algorithms
-
-**BFS (Breadth-First Search)**
-Explores all neighbors at the current depth before going deeper. Always finds the shortest path. Can be slow on large mazes because it explores in all directions equally.
-
-**DFS (Depth-First Search)**
-Dives as deep as possible before backtracking. Uses much less memory than BFS. Does not guarantee the shortest path.
-
-**A* (A-Star)**
-Guided by a heuristic (Manhattan distance to goal). Finds the shortest path much faster than BFS on average. The right choice for most practical pathfinding problems.
-
-## Quick Start
-
-```bash
-git clone https://github.com/Aliipou/maze-solution-app.git
-cd maze-solution-app
-pip install -r requirements.txt
-python main.py
+```
+┌──────────────┐        BLE        ┌──────────────┐       HTTP       ┌──────────────┐
+│  ESP32 Maze  │ ───────────────▶  │   Go REST    │ ◀─────────────▶ │    React     │
+│   Hardware   │                   │     API      │                  │  Dashboard   │
+│              │                   │  (SQLite)    │                  │              │
+│ Hall sensors │                   │  :8080       │                  │  :3000       │
+│ OLED SSD1306 │                   └──────────────┘                  └──────────────┘
+│ NimBLE       │                          ▲
+└──────────────┘                          │ HTTP
+                                   ┌──────────────┐
+                                   │ React Native │
+                                   │   Mobile     │
+                                   └──────────────┘
 ```
 
-Use arrow keys to select algorithm, Enter to run, G to generate a new maze.
+## Tech Stack
 
-## Complexity Comparison
+| Layer     | Technology                                              |
+|-----------|---------------------------------------------------------|
+| Firmware  | ESP32 (Arduino/PlatformIO), Hall sensors, SSD1306 OLED, NimBLE |
+| Backend   | Go 1.22, net/http, SQLite, Basic Auth                   |
+| Dashboard | React, TypeScript                                       |
+| Mobile    | React Native                                            |
+| Infra     | Docker, GitHub Actions CI/CD                            |
 
-| Algorithm | Time | Space | Shortest Path? |
-|-----------|------|-------|----------------|
-| BFS | O(V+E) | O(V) | Yes |
-| DFS | O(V+E) | O(V) | No |
-| A* | O(E log V) | O(V) | Yes (with admissible heuristic) |
+## Project Structure
+
+```
+maze-solution-app/
+├── cmd/api/                  # API entrypoint
+├── internal/
+│   └── api/
+│       ├── handlers/         # HTTP handlers (data, device_config, maze_device)
+│       ├── middleware/        # Auth middleware
+│       ├── repository/       # SQLite data access
+│       ├── server/           # Server setup
+│       └── service/          # Business logic
+├── firmware/
+│   ├── src/main.cpp          # ESP32 firmware
+│   └── platformio.ini        # PlatformIO config
+├── web/                      # React dashboard (TypeScript)
+│   └── src/
+│       ├── components/       # Layout, shared components
+│       ├── pages/            # Dashboard, Devices, Settings, Statistics
+│       └── services/         # API client
+├── mobile/                   # React Native companion app
+│   └── src/
+│       ├── screens/
+│       ├── services/
+│       └── store/
+├── docker-compose.yml        # Single-command deployment
+├── Dockerfile
+├── Makefile
+└── .github/workflows/        # CI and release pipelines
+```
+
+## Getting Started
+
+### Prerequisites
+
+- **Go 1.22+** for the API
+- **Node.js 18+** for the dashboard
+- **PlatformIO** for firmware development
+- **Docker** (optional) for containerized deployment
+
+### Run the API
+
+```bash
+go build -o api ./cmd/api/main.go
+./api
+```
+
+The API starts on port **8080** by default.
+
+### Run with Docker
+
+```bash
+docker compose up --build
+```
+
+### Run the Dashboard
+
+```bash
+cd web
+npm install
+npm start
+```
+
+### Flash the Firmware
+
+```bash
+cd firmware
+pio run --target upload
+pio device monitor
+```
+
+## API Endpoints
+
+The API exposes RESTful endpoints for three resource types:
+
+| Resource         | Endpoints                          |
+|------------------|------------------------------------|
+| `/data`          | GET, GET/:id, POST, PUT/:id, DELETE/:id |
+| `/device_config` | GET, GET/:id, POST, PUT/:id, DELETE/:id |
+| `/maze_device`   | GET, GET/:id, POST, PUT/:id, DELETE/:id |
+
+All endpoints require **Basic Authentication**.
+
+> **Note:** Default credentials (`admin`/`password`) are for development only. Configure real credentials via environment variables `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` in production.
 
 ## License
 

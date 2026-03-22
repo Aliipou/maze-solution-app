@@ -1,4 +1,21 @@
-node_modules/ 
-.cache/ 
-**/node_modules/ 
-**/.cache/ 
+node_modules/
+.cache/
+**/node_modules/
+**/.cache/
+
+# Build outputs
+api
+api.exe
+*.exe
+
+# Database
+*.db
+
+# Test / coverage
+coverage.out
+
+# Go vendor
+vendor/
+
+# Logs
+*.log
