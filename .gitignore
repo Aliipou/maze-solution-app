@@ -19,3 +19,10 @@ vendor/
 
 # Logs
 *.log
+
+# Secrets and sensitive files — never commit these
+.env
+*.env
+*.db
+*.log
+production.*
