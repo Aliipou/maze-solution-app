@@ -1,5 +1,9 @@
 # Maze Solution App
 
+
+## Live Demo
+**Frontend:** [https://maze-solution-app.vercel.app](https://maze-solution-app.vercel.app)
+
 **IoT maze game platform** — ESP32 hardware with Hall-effect sensors and OLED display, Go REST API backend, React dashboard, and React Native mobile companion.
 
 Players navigate a physical maze while the platform tracks movement via Hall-effect sensors, displays real-time feedback on an OLED screen, and streams data over BLE to the backend. The dashboard visualizes game sessions, device status, and player statistics.
